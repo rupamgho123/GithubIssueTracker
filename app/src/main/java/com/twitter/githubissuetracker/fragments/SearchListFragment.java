@@ -15,7 +15,6 @@ import com.twitter.githubissuetracker.R;
 import com.twitter.githubissuetracker.adapters.SearchListAdapter;
 import com.twitter.githubissuetracker.events.SearchQueryRequestedEvent;
 import com.twitter.githubissuetracker.models.Issue;
-import com.twitter.githubissuetracker.providers.BusProvider;
 import com.twitter.githubissuetracker.providers.GithubServiceProvider;
 import java.util.List;
 import retrofit2.Call;
@@ -26,10 +25,12 @@ import retrofit2.Response;
  * Created by rupam.ghosh on 11/06/16.
  */
 public class SearchListFragment extends BaseFragment implements Callback<List<Issue>>{
+  SearchQueryRequestedEvent event;
   GithubServiceProvider githubServiceProvider = new GithubServiceProvider();
   ProgressDialog progressDialog;
   @Bind(R.id.recycler_view) RecyclerView recyclerView;
 
+  public final static String TAG = SearchListFragment.class.getName();
   @Nullable @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
       @Nullable Bundle savedInstanceState) {
@@ -41,18 +42,19 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
     progressDialog = new ProgressDialog(getContext());
     progressDialog.setMessage("Loading...");
 
-    BusProvider.getInstance().post(new SearchQueryRequestedEvent("rails","rails"));
+    //BusProvider.getInstance().post(new SearchQueryRequestedEvent("rails","rails"));
   }
 
   @Subscribe
   public void onSearchQueryRequested(SearchQueryRequestedEvent event){
+    this.event = event;
     Call<List<Issue>> searchCall = githubServiceProvider.get().getIssues(event.getOwner(),event.getRepo());
     searchCall.enqueue(this);
     progressDialog.show();
   }
 
   @Override public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
-    SearchListAdapter searchListAdapter = new SearchListAdapter(response.body(), getContext());
+    SearchListAdapter searchListAdapter = new SearchListAdapter(event,response.body(), getContext());
     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     recyclerView.setAdapter(searchListAdapter);
     searchListAdapter.notifyDataSetChanged();

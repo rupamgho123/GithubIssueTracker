@@ -3,7 +3,10 @@ package com.twitter.githubissuetracker.activities;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.squareup.otto.Subscribe;
 import com.twitter.githubissuetracker.R;
+import com.twitter.githubissuetracker.events.ShowIssueEvent;
+import com.twitter.githubissuetracker.fragments.IssueDetailsFragment;
 import com.twitter.githubissuetracker.fragments.SearchDialogFragment;
 import com.twitter.githubissuetracker.fragments.SearchListFragment;
 
@@ -25,7 +28,22 @@ public class MainActivity extends BaseActivity {
 
   private void openSearchListFragment() {
     getSupportFragmentManager().beginTransaction().
-        replace(R.id.base_frame, new SearchListFragment()).
+        replace(R.id.base_frame, new SearchListFragment(),SearchListFragment.TAG).
+        addToBackStack(SearchListFragment.TAG).
+        commit();
+  }
+
+  @Subscribe
+  public void onShowIssueEvent(ShowIssueEvent event){
+    IssueDetailsFragment issueDetailsFragment = new IssueDetailsFragment();
+    Bundle args = new Bundle();
+    args.putParcelable(IssueDetailsFragment.ISSUE,event.getIssue());
+    args.putString(IssueDetailsFragment.REPO,event.getRepo());
+    args.putString(IssueDetailsFragment.OWNER,event.getOwner());
+    issueDetailsFragment.setArguments(args);
+    getSupportFragmentManager().beginTransaction().
+        replace(R.id.base_frame, issueDetailsFragment, IssueDetailsFragment.TAG).
+        addToBackStack(IssueDetailsFragment.TAG).
         commit();
   }
 
@@ -44,6 +62,15 @@ public class MainActivity extends BaseActivity {
         return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  @Override public void onBackPressed() {
+    int count = getSupportFragmentManager().getBackStackEntryCount();
+    if(count <= 1){
+      finish();
+    }else {
+      super.onBackPressed();
+    }
   }
 
   private void showSearchDialog() {
