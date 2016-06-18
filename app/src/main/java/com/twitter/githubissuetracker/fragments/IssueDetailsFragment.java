@@ -55,6 +55,8 @@ public class IssueDetailsFragment extends BaseFragment implements Callback<List<
   }
 
   @Override public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
+    if(getContext() == null)
+      return;
     List<Comment> comments = response.body();
     if(comments.size() > 0 && commentsList != null){
       CommentAdapter commentAdapter = new CommentAdapter(comments,getContext());
@@ -66,6 +68,8 @@ public class IssueDetailsFragment extends BaseFragment implements Callback<List<
   }
 
   @Override public void onFailure(Call<List<Comment>> call, Throwable t) {
+    if(getContext() == null)
+      return;
     Toast.makeText(getContext(),"Could not fetch comments",Toast.LENGTH_SHORT).show();
   }
 }

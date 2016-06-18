@@ -60,12 +60,14 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
   }
 
   @Override public void onFailure(Call<List<Issue>> call, Throwable t) {
+    if(getContext() == null)
+      return;
     Toast.makeText(getContext(),"Could not fetch data from github",Toast.LENGTH_LONG).show();
     progressDialog.hide();
   }
 
   private void onResponse(List<Issue> issueList){
-    if(issueList == null || issueList.size() == 0)
+    if(getContext() == null || issueList == null || issueList.size() == 0)
       return;
     this.issues = issueList;
     SearchListAdapter searchListAdapter = new SearchListAdapter(listener,event,issueList, getContext());
