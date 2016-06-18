@@ -52,11 +52,6 @@ public class MainActivity extends BaseActivity implements SearchQueryInterface,G
         commit();
   }
 
-  @Override public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.main_menu, menu);
-    return super.onCreateOptionsMenu(menu);
-  }
-
   @Override public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case android.R.id.home:

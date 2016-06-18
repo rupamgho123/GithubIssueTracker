@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -47,6 +49,7 @@ public class IssueDetailsFragment extends BaseFragment implements Callback<List<
       String repo = arguments.getString(REPO);
       String owner = arguments.getString(OWNER);
       if(issue != null)
+        setTitle(issue.getNumber().toString());
         issueReporter.setText(String.format("Reported by user: %s", issue.getUser().getLogin()));
         issueBody.setText(String.format("Description: %s",issue.getBody()));
         Call<List<Comment>> listCall = githubServiceProvider.get().getComments(owner,repo,issue.getNumber());
@@ -71,5 +74,10 @@ public class IssueDetailsFragment extends BaseFragment implements Callback<List<
     if(getContext() == null)
       return;
     Toast.makeText(getContext(),"Could not fetch comments",Toast.LENGTH_SHORT).show();
+  }
+
+  @Override public void onCreateOptionsMenu(Menu menu,MenuInflater menuInflater) {
+    menu.clear();
+    super.onCreateOptionsMenu(menu,menuInflater);
   }
 }

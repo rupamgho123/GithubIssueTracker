@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -42,6 +44,7 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
 
   @Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    setTitle("GithubIssueTracker");
     progressDialog = new ProgressDialog(getContext());
     progressDialog.setMessage("Loading...");
 
@@ -79,5 +82,10 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
 
   public void setGetIssueDetailsInterface(GetIssueDetailsInterface listener) {
     this.listener = listener;
+  }
+
+  @Override public void onCreateOptionsMenu(Menu menu,MenuInflater menuInflater) {
+    menuInflater.inflate(R.menu.main_menu, menu);
+    super.onCreateOptionsMenu(menu,menuInflater);
   }
 }
