@@ -10,9 +10,9 @@ import android.widget.Toast;
 import com.twitter.githubissuetracker.R;
 import com.twitter.githubissuetracker.events.SearchQueryRequestedEvent;
 import com.twitter.githubissuetracker.events.ShowIssueEvent;
+import com.twitter.githubissuetracker.interfaces.GetIssueDetailsInterface;
 import com.twitter.githubissuetracker.interfaces.OnItemClickListener;
 import com.twitter.githubissuetracker.models.Issue;
-import com.twitter.githubissuetracker.providers.BusProvider;
 import java.util.List;
 
 /**
@@ -23,7 +23,9 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Is
   List<Issue> issues;
   Context context;
   SearchQueryRequestedEvent event;
-  public SearchListAdapter(SearchQueryRequestedEvent event,List<Issue> issues,Context context){
+  GetIssueDetailsInterface listener;
+  public SearchListAdapter(GetIssueDetailsInterface listener,SearchQueryRequestedEvent event,List<Issue> issues,Context context){
+    this.listener = listener;
     this.event = event;
     this.issues = issues;
     this.context = context;
@@ -62,6 +64,6 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Is
   }
 
   @Override public void onClick(View v,int position) {
-    BusProvider.getInstance().post(new ShowIssueEvent(event.getOwner(),event.getRepo(),issues.get(position)));
+    listener.onShowIssueEvent(new ShowIssueEvent(event.getOwner(),event.getRepo(),issues.get(position)));
   }
 }

@@ -2,8 +2,8 @@ package com.twitter.githubissuetracker.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.Bind;
 import com.twitter.githubissuetracker.R;
+import com.twitter.githubissuetracker.adapters.CommentAdapter;
 import com.twitter.githubissuetracker.models.Comment;
 import com.twitter.githubissuetracker.models.Issue;
 import com.twitter.githubissuetracker.providers.GithubServiceProvider;
@@ -23,6 +24,7 @@ import retrofit2.Response;
  * Created by rupam.ghosh on 17/06/16.
  */
 public class IssueDetailsFragment extends BaseFragment implements Callback<List<Comment>>{
+  @Bind(R.id.issue_reporter) TextView issueReporter;
   @Bind(R.id.issue_body) TextView issueBody;
   @Bind(R.id.comments_list) RecyclerView commentsList;
   public final static String TAG = IssueDetailsFragment.class.getName();
@@ -42,22 +44,28 @@ public class IssueDetailsFragment extends BaseFragment implements Callback<List<
     Bundle arguments = getArguments();
     if(arguments != null){
       Issue issue = arguments.getParcelable(ISSUE);
-      String repo = arguments.getParcelable(REPO);
-      String owner = arguments.getParcelable(OWNER);
+      String repo = arguments.getString(REPO);
+      String owner = arguments.getString(OWNER);
       if(issue != null)
-        issueBody.setText(
-            String.format("Reported by user: %s\nDescription: %s", issue.getUser().getLogin(),
-                issue.getBody()));
+        issueReporter.setText(String.format("Reported by user: %s", issue.getUser().getLogin()));
+        issueBody.setText(String.format("Description: %s",issue.getBody()));
         Call<List<Comment>> listCall = githubServiceProvider.get().getComments(owner,repo,issue.getNumber());
         listCall.enqueue(this);
     }
   }
 
   @Override public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-    Log.d("","");
+    List<Comment> comments = response.body();
+    if(comments.size() > 0 && commentsList != null){
+      CommentAdapter commentAdapter = new CommentAdapter(comments,getContext());
+      commentsList.setLayoutManager(new LinearLayoutManager(getContext()));
+      commentsList.setAdapter(commentAdapter);
+    }else{
+      Toast.makeText(getContext(),"No comments on this issues yet",Toast.LENGTH_SHORT).show();
+    }
   }
 
   @Override public void onFailure(Call<List<Comment>> call, Throwable t) {
-    Toast.makeText(getContext(),"Could not fetch commnets",Toast.LENGTH_SHORT).show();
+    Toast.makeText(getContext(),"Could not fetch comments",Toast.LENGTH_SHORT).show();
   }
 }

@@ -10,10 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import butterknife.Bind;
-import com.squareup.otto.Subscribe;
 import com.twitter.githubissuetracker.R;
 import com.twitter.githubissuetracker.adapters.SearchListAdapter;
 import com.twitter.githubissuetracker.events.SearchQueryRequestedEvent;
+import com.twitter.githubissuetracker.interfaces.GetIssueDetailsInterface;
+import com.twitter.githubissuetracker.interfaces.SearchQueryInterface;
 import com.twitter.githubissuetracker.models.Issue;
 import com.twitter.githubissuetracker.providers.GithubServiceProvider;
 import java.util.List;
@@ -24,11 +25,13 @@ import retrofit2.Response;
 /**
  * Created by rupam.ghosh on 11/06/16.
  */
-public class SearchListFragment extends BaseFragment implements Callback<List<Issue>>{
+public class SearchListFragment extends BaseFragment implements Callback<List<Issue>>,SearchQueryInterface {
   SearchQueryRequestedEvent event;
+  GetIssueDetailsInterface listener;
   GithubServiceProvider githubServiceProvider = new GithubServiceProvider();
   ProgressDialog progressDialog;
   @Bind(R.id.recycler_view) RecyclerView recyclerView;
+  List<Issue> issues;
 
   public final static String TAG = SearchListFragment.class.getName();
   @Nullable @Override
@@ -42,10 +45,9 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
     progressDialog = new ProgressDialog(getContext());
     progressDialog.setMessage("Loading...");
 
-    //BusProvider.getInstance().post(new SearchQueryRequestedEvent("rails","rails"));
+    onResponse(issues);
   }
 
-  @Subscribe
   public void onSearchQueryRequested(SearchQueryRequestedEvent event){
     this.event = event;
     Call<List<Issue>> searchCall = githubServiceProvider.get().getIssues(event.getOwner(),event.getRepo());
@@ -54,15 +56,26 @@ public class SearchListFragment extends BaseFragment implements Callback<List<Is
   }
 
   @Override public void onResponse(Call<List<Issue>> call, Response<List<Issue>> response) {
-    SearchListAdapter searchListAdapter = new SearchListAdapter(event,response.body(), getContext());
+    onResponse(response.body());
+  }
+
+  @Override public void onFailure(Call<List<Issue>> call, Throwable t) {
+    Toast.makeText(getContext(),"Could not fetch data from github",Toast.LENGTH_LONG).show();
+    progressDialog.hide();
+  }
+
+  private void onResponse(List<Issue> issueList){
+    if(issueList == null || issueList.size() == 0)
+      return;
+    this.issues = issueList;
+    SearchListAdapter searchListAdapter = new SearchListAdapter(listener,event,issueList, getContext());
     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     recyclerView.setAdapter(searchListAdapter);
     searchListAdapter.notifyDataSetChanged();
     progressDialog.hide();
   }
 
-  @Override public void onFailure(Call<List<Issue>> call, Throwable t) {
-    Toast.makeText(getContext(),"Could not fetch data from github",Toast.LENGTH_LONG).show();
-    progressDialog.hide();
+  public void setGetIssueDetailsInterface(GetIssueDetailsInterface listener) {
+    this.listener = listener;
   }
 }
